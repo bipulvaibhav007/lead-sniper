@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Lead Sniper Pro</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root { 
+      --primary: #6366f1; /* Indigo */
+      --primary-hover: #4f46e5;
+      --bg: #f8fafc; 
+      --surface: #ffffff;
+      --border: #e2e8f0;
+      --text: #0f172a;
+      --gray: #64748b;
+      --success: #10b981;
+      --danger: #ef4444;
+    }
+    
+    * { box-sizing: border-box; }
+    body { font-family: 'Inter', sans-serif; background: var(--bg); margin: 0; color: var(--text); padding-bottom: 200px; }
+    
+    /* LAYOUT */
+    .container { max-width: 1250px; margin: 0 auto; padding: 40px 30px; display: grid; grid-template-columns: 380px 1fr; gap: 30px; }
+    
+    /* CARDS */
+    .card { background: var(--surface); border-radius: 16px; border: 1px solid var(--border); box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); overflow: hidden; transition: transform 0.2s; }
+    .card-header { padding: 20px 24px; border-bottom: 1px solid var(--border); font-weight: 700; background: #fff; color: var(--text); display: flex; justify-content: space-between; align-items: center; }
+    .card-body { padding: 24px; }
+
+    /* INPUTS */
+    textarea { width: 100%; height: 200px; padding: 15px; border: 2px solid #e2e8f0; border-radius: 10px; font-family: inherit; font-size: 0.95rem; resize: none; margin-bottom: 20px; transition: border 0.2s; }
+    textarea:focus { outline: none; border-color: var(--primary); }
+    
+    .input-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
+    input[type=number] { width: 80px; padding: 8px; border-radius: 8px; border: 2px solid #e2e8f0; text-align: center; font-weight: 600; }
+
+    /* BUTTONS */
+    .btn { display: block; width: 100%; padding: 14px; border-radius: 10px; font-weight: 600; cursor: pointer; border: none; transition: all 0.2s; font-size: 1rem; display: flex; justify-content: center; align-items: center; gap: 8px; }
+    .btn-primary { background: var(--primary); color: white; box-shadow: 0 4px 12px rgba(99, 102, 241, 0.25); }
+    .btn-primary:hover { background: var(--primary-hover); transform: translateY(-1px); }
+    .btn-danger { background: var(--danger); color: white; display: none; }
+    
+    /* PROGRESS */
+    .progress-box { margin-top: 25px; background: #f1f5f9; padding: 15px; border-radius: 10px; }
+    .progress-bg { height: 10px; background: #e2e8f0; border-radius: 5px; overflow: hidden; margin: 10px 0; }
+    .progress-fill { height: 100%; background: var(--primary); width: 0%; transition: width 0.3s; }
+
+    /* FILE GRID */
+    .file-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; }
+    .file-card { background: white; border: 1px solid var(--border); border-radius: 12px; padding: 20px; transition: all 0.2s; position: relative; display: flex; flex-direction: column; }
+    .file-card:hover { border-color: var(--primary); transform: translateY(-3px); box-shadow: 0 10px 20px rgba(0,0,0,0.05); }
+    
+    .file-title { font-weight: 700; font-size: 1rem; margin-bottom: 8px; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .file-meta { font-size: 0.85rem; color: var(--gray); display: flex; gap: 15px; margin-bottom: 15px; }
+    
+    .action-row { display: flex; gap: 8px; margin-top: auto; }
+    .btn-sm { padding: 8px 12px; border-radius: 8px; font-size: 0.85rem; flex: 1; text-decoration: none; border: 1px solid var(--border); background: white; color: var(--text); cursor: pointer; display: flex; align-items: center; justify-content: center; font-weight: 500; transition: 0.1s; }
+    .btn-sm:hover { background: #f8fafc; border-color: #cbd5e1; }
+    
+    .btn-preview { color: var(--primary); background: #eef2ff; border-color: transparent; }
+    .btn-preview:hover { background: #e0e7ff; }
+    
+    /* VCard Button Style */
+    .btn-vcf { color: #8b5cf6; border-color: #ddd6fe; background: #f5f3ff; }
+    .btn-vcf:hover { background: #ede9fe; }
+
+    .btn-del { flex: 0; min-width: 40px; color: var(--danger); background: #fef2f2; border-color: transparent; }
+    .btn-del:hover { background: #fee2e2; }
+
+    /* LOGS (Compact) */
+    .log-panel { 
+        position: fixed; bottom: 25px; right: 25px; width: 450px; 
+        background: #0f172a; color: #4ade80; border-radius: 12px; 
+        box-shadow: 0 20px 40px rgba(0,0,0,0.3); z-index: 100;
+        display: flex; flex-direction: column; overflow: hidden;
+        border: 1px solid #334155; transition: height 0.3s;
+    }
+    .log-header { padding: 12px 20px; background: rgba(255,255,255,0.05); font-size: 0.9rem; color: #94a3b8; display: flex; justify-content: space-between; cursor: pointer; font-weight: 600; align-items: center; }
+    .log-content { height: 180px; overflow-y: auto; padding: 15px 20px; font-family: 'Menlo', monospace; font-size: 0.85rem; line-height: 1.6; scrollbar-width: thin; }
+    .log-entry { padding: 2px 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
+    .log-error { color: #f87171; }
+    .log-success { color: #4ade80; }
+
+    /* MODAL */
+    .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px); z-index: 999; display: none; justify-content: center; align-items: center; opacity: 0; transition: opacity 0.2s; }
+    .modal-box { background: white; width: 90%; max-width: 900px; max-height: 85vh; border-radius: 16px; padding: 0; display: flex; flex-direction: column; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); transform: scale(0.95); transition: transform 0.2s; }
+    
+    .modal-header { padding: 20px 30px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; background: #fff; border-radius: 16px 16px 0 0; }
+    .modal-body { padding: 30px; overflow-y: auto; flex: 1; background: #f8fafc; }
+    
+    .stats-bar { display: flex; gap: 15px; margin-bottom: 20px; flex-wrap: wrap; }
+    .stat-pill { background: white; border: 1px solid var(--border); padding: 8px 16px; border-radius: 20px; font-size: 0.9rem; font-weight: 500; display: flex; align-items: center; gap: 8px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
+    
+    .copy-btn { background: #10b981; color: white; border: none; padding: 8px 16px; border-radius: 8px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: 0.2s; font-size: 0.9rem; margin-left: auto; }
+    .copy-btn:hover { background: #059669; }
+    .copy-btn:disabled { background: #cbd5e1; cursor: not-allowed; }
+
+    /* Table */
+    .table-container { background: white; border-radius: 8px; border: 1px solid var(--border); overflow: hidden; }
+    .preview-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+    .preview-table th { background: #f1f5f9; padding: 12px 15px; text-align: left; font-weight: 600; color: var(--text); border-bottom: 1px solid var(--border); }
+    .preview-table td { padding: 10px 15px; border-bottom: 1px solid var(--border); color: #334155; }
+    .preview-table tr:last-child td { border-bottom: none; }
+
+  </style>
+</head>
+<body>
+
+<div class="container">
+  
+  <div class="card">
+    <div class="card-header">
+      <span>🚀 Campaign Setup</span>
+      <span class="status-badge" style="background:#e0e7ff; color:#4338ca; padding:4px 10px; border-radius:20px; font-size:0.8rem;" id="taskStatus">Idle</span>
+    </div>
+    <div class="card-body">
+      <label style="font-weight:600; font-size:0.95rem; margin-bottom:10px; display:block;">Target Keywords</label>
+      <textarea id="keywords" placeholder="Plumbers in Texas&#10;Lawyers in Chicago&#10;Gyms in London"></textarea>
+      
+      <div class="input-row">
+        <div>
+          <label style="font-weight:600; font-size:0.9rem;">Max Leads</label>
+          <div style="font-size:0.8rem; color:var(--gray);">Per keyword</div>
+        </div>
+        <input type="number" id="limit" value="10">
+      </div>
+
+      <button id="startBtn" class="btn btn-primary" onclick="startTask()">
+        <span>▶ Start Extraction</span>
+      </button>
+      <button id="stopBtn" class="btn btn-danger" onclick="stopTask()">
+        <span>⏹ Stop Process</span>
+      </button>
+
+      <div class="progress-box">
+        <div style="display:flex; justify-content:space-between; font-size:0.85rem; margin-bottom:5px;">
+          <span style="color:var(--gray); font-weight:500;">Progress</span>
+          <span id="progText" style="font-weight:700; color:var(--primary);">0%</span>
+        </div>
+        <div class="progress-bg"><div class="progress-fill" id="progBar"></div></div>
+      </div>
+    </div>
+  </div>
+
+  <div>
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+      <h2 style="margin:0; font-size:1.5rem; letter-spacing:-0.5px;">Campaign Reports</h2>
+      <button onclick="location.reload()" class="btn-sm" style="width:auto; background:white;">↻ Refresh</button>
+    </div>
+
+    <div class="file-grid">
+      {% for f in files %}
+      <div class="file-card">
+        <div class="file-title">{{ f.name }}</div>
+        <div class="file-meta">
+          <span>📅 {{ f.date }}</span>
+          <span>💾 {{ f.size }}</span>
+        </div>
+        <div class="action-row">
+          <button class="btn-sm btn-preview" onclick="previewFile('{{ f.name }}')">👁 Preview</button>
+          
+          <a href="/download/{{ f.name }}" class="btn-sm">⬇ Excel</a>
+          <a href="/download_vcf/{{ f.name }}" class="btn-sm btn-vcf" title="Export to Phone Contacts">📱 VCard</a>
+          
+          <button class="btn-sm btn-del" onclick="deleteFile('{{ f.name }}')">🗑</button>
+        </div>
+      </div>
+      {% else %}
+      <div style="grid-column: 1/-1; text-align: center; padding: 60px; background:white; border-radius:12px; border:1px solid var(--border); border-style:dashed;">
+        <div style="font-size:2.5rem; margin-bottom:15px; opacity:0.5;">📂</div>
+        <h3 style="margin:0; color:var(--text);">No reports yet</h3>
+        <p style="color:var(--gray); margin-top:5px;">Start a campaign to generate leads.</p>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+
+<div class="log-panel">
+  <div class="log-header" onclick="toggleLogs()">
+    <span>⚡ System Terminal</span>
+    <span id="logToggleIcon">▼</span>
+  </div>
+  <div class="log-content" id="logBox">
+    <div class="log-entry">System ready...</div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="previewModal">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h3 style="margin:0;">Data Preview</h3>
+      <button class="btn-sm" style="width:auto; padding:6px 12px;" onclick="closeModal()">Close</button>
+    </div>
+    
+    <div class="modal-body">
+      <div class="stats-bar">
+        <div class="stat-pill">Total Leads: <b id="pLeads">0</b></div>
+        <div class="stat-pill" style="color:#166534; border-color:#bbf7d0; background:#f0fdf4;">Valid Emails: <b id="pEmails">0</b></div>
+        
+        <button class="copy-btn" id="copyBtn" onclick="copyEmails()">
+          <span>📋 Copy All Emails</span>
+        </button>
+      </div>
+
+      <div class="table-container" id="previewContent">
+        <div style="padding:40px; text-align:center; color:#64748b;">Loading data...</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+let timer;
+let logsCollapsed = false;
+let currentEmailList = []; // Store emails here
+
+// --- ACTIONS ---
+
+async function startTask() {
+  const keywords = document.getElementById('keywords').value;
+  const limit = document.getElementById('limit').value;
+  if(!keywords.trim()) return alert("Enter keywords first");
+
+  document.getElementById('startBtn').style.display='none';
+  document.getElementById('stopBtn').style.display='block';
+  
+  await fetch('/start_bulk', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({ keywords, max_results: limit })
+  });
+  timer = setInterval(updateStatus, 1000);
+}
+
+async function updateStatus() {
+  try {
+    const res = await fetch('/status');
+    const data = await res.json();
+    
+    document.getElementById('taskStatus').innerText = data.status;
+    document.getElementById('progText').innerText = data.progress + "%";
+    document.getElementById('progBar').style.width = data.progress + "%";
+
+    const logBox = document.getElementById('logBox');
+    const newLogs = data.logs.map(l => {
+        let cls = "";
+        if(l.toLowerCase().includes("error")) cls = "log-error";
+        if(l.toLowerCase().includes("finished") || l.toLowerCase().includes("success")) cls = "log-success";
+        return `<div class="log-entry ${cls}">${l}</div>`;
+    }).join('');
+    
+    if(logBox.innerHTML !== newLogs) {
+        logBox.innerHTML = newLogs;
+        logBox.scrollTop = logBox.scrollHeight;
+    }
+
+    if(data.status === "Completed") {
+        clearInterval(timer);
+        setTimeout(() => location.reload(), 1500);
+    }
+  } catch(e) { console.log(e); }
+}
+
+async function stopTask() {
+  await fetch('/cancel', {method:'POST'});
+  location.reload();
+}
+
+async function deleteFile(filename) {
+  if(!confirm("Are you sure you want to delete " + filename + "?")) return;
+  await fetch('/delete/' + filename, {method:'POST'});
+  location.reload();
+}
+
+// --- PREVIEW & COPY ---
+
+async function previewFile(filename) {
+  const modal = document.getElementById('previewModal');
+  const overlay = modal;
+  const box = modal.querySelector('.modal-box');
+  
+  overlay.style.display = 'flex';
+  // Small animation
+  setTimeout(() => { overlay.style.opacity = '1'; box.style.transform = 'scale(1)'; }, 10);
+
+  document.getElementById('previewContent').innerHTML = '<div style="padding:40px; text-align:center; color:#64748b;">Loading data...</div>';
+  document.getElementById('copyBtn').disabled = true;
+  document.getElementById('copyBtn').innerHTML = '<span>📋 Copy All Emails</span>';
+
+  try {
+    const res = await fetch('/preview/' + filename);
+    const data = await res.json();
+    
+    if(data.error) {
+        document.getElementById('previewContent').innerHTML = '<div style="padding:20px; color:red;">Error: ' + data.error + '</div>';
+    } else {
+        document.getElementById('pLeads').innerText = data.total_leads;
+        document.getElementById('pEmails').innerText = data.total_emails;
+        document.getElementById('previewContent').innerHTML = data.html;
+        
+        // Store emails for the copy button
+        currentEmailList = data.email_list || [];
+        
+        // Enable/Disable Copy Button
+        const btn = document.getElementById('copyBtn');
+        if(currentEmailList.length > 0) {
+            btn.disabled = false;
+            btn.innerHTML = `<span>📋 Copy ${currentEmailList.length} Emails</span>`;
+        } else {
+            btn.disabled = true;
+            btn.innerHTML = `<span>No Emails Found</span>`;
+        }
+    }
+  } catch(e) {
+    alert("Error fetching preview");
+  }
+}
+
+function copyEmails() {
+    if(!currentEmailList || currentEmailList.length === 0) return;
+    
+    // Join with comma + space (standard for email clients)
+    const textToCopy = currentEmailList.join(', ');
+    
+    navigator.clipboard.writeText(textToCopy).then(() => {
+        const btn = document.getElementById('copyBtn');
+        const originalText = btn.innerHTML;
+        
+        btn.innerHTML = '<span>✅ Copied!</span>';
+        btn.style.background = '#059669';
+        
+        setTimeout(() => {
+            btn.innerHTML = `<span>📋 Copy ${currentEmailList.length} Emails</span>`;
+            btn.style.background = '';
+        }, 2000);
+    }).catch(err => {
+        alert("Failed to copy");
+    });
+}
+
+function closeModal() {
+  const modal = document.getElementById('previewModal');
+  const box = modal.querySelector('.modal-box');
+  
+  modal.style.opacity = '0';
+  box.style.transform = 'scale(0.95)';
+  
+  setTimeout(() => { modal.style.display = 'none'; }, 200);
+}
+
+function toggleLogs() {
+  const content = document.querySelector('.log-content');
+  const icon = document.getElementById('logToggleIcon');
+  logsCollapsed = !logsCollapsed;
+  content.style.display = logsCollapsed ? 'none' : 'block';
+  icon.innerText = logsCollapsed ? '▲' : '▼';
+}
+
+// Close modal on outside click
+document.getElementById('previewModal').addEventListener('click', (e) => {
+  if(e.target === document.getElementById('previewModal')) closeModal();
+});
+</script>
+
+</body>
+</html>
